@@ -1,0 +1,80 @@
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: apps/gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - API_KEY=${API_KEY}
+      - ORCHESTRATOR_URL=http://orchestrator:8001
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-60}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-60}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      - orchestrator
+    networks:
+      - homelab-net
+    restart: unless-stopped
+
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: apps/orchestrator/Dockerfile
+    environment:
+      - LLM_ADAPTER_URL=http://llm-adapter:8002
+      - MONITORING_URL=http://tool-monitoring:8003
+      - AUDIT_LOG_PATH=/var/log/homelab-assistant/audit.jsonl
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - audit-logs:/var/log/homelab-assistant
+    depends_on:
+      - llm-adapter
+      - tool-monitoring
+    networks:
+      - homelab-net
+    restart: unless-stopped
+
+  llm-adapter:
+    build:
+      context: ..
+      dockerfile: apps/llm_adapter/Dockerfile
+    environment:
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    networks:
+      - homelab-net
+    restart: unless-stopped
+
+  tool-monitoring:
+    build:
+      context: ..
+      dockerfile: apps/tool_monitoring/Dockerfile
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - homelab-net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: apps/frontend/Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+    networks:
+      - homelab-net
+    restart: unless-stopped
+
+networks:
+  homelab-net:
+    driver: bridge
+
+volumes:
+  audit-logs:
