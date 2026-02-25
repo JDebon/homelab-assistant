@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     # Audit
     audit_log_path: str = "/var/log/homelab-assistant/audit.jsonl"
 
+    # Database
+    db_path: str = "/var/lib/homelab-assistant/db.sqlite3"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

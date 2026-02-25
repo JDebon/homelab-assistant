@@ -13,8 +13,8 @@ COPY packages/homelab_common/homelab_common /app/homelab_common
 # Copy service code
 COPY apps/orchestrator/orchestrator /app/orchestrator
 
-# Create audit log directory
-RUN mkdir -p /var/log/homelab-assistant
+# Create audit log and database directories
+RUN mkdir -p /var/log/homelab-assistant && mkdir -p /var/lib/homelab-assistant
 
 EXPOSE 8001
 

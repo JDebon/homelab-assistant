@@ -12,6 +12,7 @@ def mock_settings(mocker):
     mock.llm_adapter_url = "http://test-llm:8002"
     mock.monitoring_url = "http://test-monitoring:8003"
     mock.audit_log_path = "/tmp/test-audit.jsonl"
+    mock.db_path = ":memory:"
     mocker.patch("orchestrator.main.settings", mock)
     return mock
 
@@ -22,7 +23,18 @@ def mock_audit(mocker):
 
 
 @pytest.fixture
-async def orchestrator_client(mock_settings, mock_audit):
+def mock_db(mocker):
+    mocker.patch("orchestrator.main.init_db", new_callable=AsyncMock)
+    mocker.patch("orchestrator.main.record_session", new_callable=AsyncMock)
+    mocker.patch(
+        "orchestrator.main.get_enabled_tools",
+        new_callable=AsyncMock,
+        return_value={"get_system_resources", "list_containers"},
+    )
+
+
+@pytest.fixture
+async def orchestrator_client(mock_settings, mock_audit, mock_db):
     from orchestrator.main import app
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

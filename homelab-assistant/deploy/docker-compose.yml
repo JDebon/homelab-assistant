@@ -25,9 +25,11 @@ services:
       - LLM_ADAPTER_URL=http://llm-adapter:8002
       - MONITORING_URL=http://tool-monitoring:8003
       - AUDIT_LOG_PATH=/var/log/homelab-assistant/audit.jsonl
+      - DB_PATH=/var/lib/homelab-assistant/db.sqlite3
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - audit-logs:/var/log/homelab-assistant
+      - db-data:/var/lib/homelab-assistant
     depends_on:
       - llm-adapter
       - tool-monitoring
@@ -78,3 +80,4 @@ networks:
 
 volumes:
   audit-logs:
+  db-data:

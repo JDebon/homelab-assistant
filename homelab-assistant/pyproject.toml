@@ -25,6 +25,7 @@ dependencies = [
     # Shared packages
     "homelab-schemas",
     "homelab-common",
+    "aiosqlite (>=0.22.1,<0.23.0)",
 ]
 
 [project.optional-dependencies]
@@ -58,6 +59,7 @@ psutil = "^6.0.0"
 docker = "^7.1.0"
 homelab-schemas = { path = "packages/homelab_schemas", develop = true }
 homelab-common = { path = "packages/homelab_common", develop = true }
+aiosqlite = "^0.20.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
