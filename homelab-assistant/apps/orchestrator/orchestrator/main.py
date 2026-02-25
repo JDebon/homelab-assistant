@@ -7,6 +7,7 @@ from homelab_common import setup_logging, get_logger, get_settings
 from homelab_schemas import ChatRequest, ChatResponse, LLMRequest, LLMResponse
 from .tools import AVAILABLE_TOOLS, execute_tool
 from .audit import write_audit_log
+from .database import init_db, record_session, get_enabled_tools
 
 settings = get_settings()
 logger = get_logger(__name__)
@@ -31,6 +32,7 @@ Always be helpful and provide clear explanations of the monitoring data you retr
 async def lifespan(app: FastAPI):
     setup_logging(settings.log_level, "orchestrator")
     logger.info("Orchestrator service starting")
+    await init_db(settings.db_path)
     yield
     logger.info("Orchestrator service shutting down")
 
@@ -55,6 +57,9 @@ async def chat(request: ChatRequest):
     conversation_id = request.conversation_id or str(uuid.uuid4())
 
     logger.info(f"Processing chat request: conversation_id={conversation_id}")
+
+    await record_session(settings.db_path, conversation_id)
+    enabled_tools = await get_enabled_tools(settings.db_path)
 
     # Build the messages for the LLM
     messages = [{"role": "user", "content": request.message}]
@@ -114,7 +119,7 @@ async def chat(request: ChatRequest):
                 tool_calls_made.append(tool_name)
 
                 try:
-                    result = await execute_tool(tool_name, tool_args, settings)
+                    result = await execute_tool(tool_name, tool_args, settings, enabled_tools)
                     tool_results.append({
                         "role": "tool",
                         "tool_call_id": tool_id,

@@ -12,6 +12,7 @@ os.environ["ORCHESTRATOR_URL"] = "http://test-orchestrator:8001"
 os.environ["LLM_ADAPTER_URL"] = "http://test-llm-adapter:8002"
 os.environ["MONITORING_URL"] = "http://test-monitoring:8003"
 os.environ["AUDIT_LOG_PATH"] = "/tmp/test-audit.jsonl"
+os.environ["DB_PATH"] = ":memory:"
 
 # Add each app's source directory to sys.path so packages are importable.
 _APPS_DIR = Path(__file__).parent.parent / "apps"

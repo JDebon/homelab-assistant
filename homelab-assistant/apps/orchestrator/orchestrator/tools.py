@@ -19,10 +19,16 @@ AVAILABLE_TOOLS: dict[str, ToolDefinition] = {
 }
 
 
-async def execute_tool(name: str, arguments: dict[str, Any], settings: Settings) -> Any:
+async def execute_tool(
+    name: str,
+    arguments: dict[str, Any],
+    settings: Settings,
+    enabled_tools: set[str] | None = None,
+) -> Any:
     """Execute a tool and return the result."""
 
-    if name not in AVAILABLE_TOOLS:
+    active = enabled_tools if enabled_tools is not None else set(AVAILABLE_TOOLS.keys())
+    if name not in active:
         raise ValueError(f"Unknown tool: {name}")
 
     async with httpx.AsyncClient(timeout=30.0) as client:
